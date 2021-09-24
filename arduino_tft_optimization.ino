@@ -10,8 +10,6 @@
 #define TFT_RST    26  // Any pin. you can also connect this to the Arduino reset in which case, set this #define pin to -1!
 #define SD_CS      25  // Any pin.
 
-SPISettings settingsA(25000000, MSBFIRST, SPI_MODE1);
-volatile int segment_number = 1;
 static uint16_t image[240][240]; // For benchmarking
 ST7789_t3 tft = ST7789_t3(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
@@ -23,12 +21,12 @@ void setup() {
   tft.init(240, 240);   // initialize a ST7789 chip, 240x240 pixels
   // Adding print functions to the ST7735_t3 library shows that changing this value does alter
   // the ctar value, but there is change in image print speed. Not sure what this is for.
-  tft.setBitrate(25000000); 
+  //tft.setBitrate(25000000); 
   // Uncommenting useFrameBuffer and setFrameBuffer brings delta measurement down from 50ms 
   // to 2ms per image, but I don't see any visual difference in speed. I'm thinking the async 
   // operation halts the timer clock, giving an incorrect output.
-  //tft.useFrameBuffer(true); 
-  //tft.setFrameBuffer(*image);
+  tft.useFrameBuffer(true); 
+  tft.setFrameBuffer(*image);
   tft.fillScreen(ST77XX_BLACK);
 }
 
@@ -40,10 +38,11 @@ void fullscreen_test() {
   }
   unsigned long m1 = micros();
   tft.writeRect(0,0,240,240,*image);
-  //tft.updateScreenAsync(); // Related to useFrameBuffer and setFrameBuffer
+  tft.updateScreenAsync(); // Related to useFrameBuffer and setFrameBuffer
   unsigned long m2 = micros();
   unsigned long delta = m2 - m1;
-  // Averages to 50ms.
+  // 50ms @ ST7735_SPICLOCK < 30000000
+  // 35ms @ ST7735_SPICLOCK >= 30000000
   Serial.print("Draw time: ");
   Serial.println(delta);
 }
