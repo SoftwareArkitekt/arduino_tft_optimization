@@ -12,7 +12,7 @@
 
 SPISettings settingsA(25000000, MSBFIRST, SPI_MODE1);
 volatile int segment_number = 1;
-static uint16_t segment[45][240]; // 4 segments make up one image, 240x160
+static uint16_t segment[45][240]; // 4 segments make up one image, 240x180
 ST7789_t3 tft = ST7789_t3(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
 void setup() {
@@ -45,7 +45,7 @@ void loop() {
     segment_number = 1;
   }
   // Calculate how long it took to display this 240x45px segment
-  // 4 segments = 1 full 240x160 image. 
+  // 4 segments = 1 full 240x180 image. 
   // delta averages to 9389 microseconds (9.39ms)
   // This number needs to be closer to 3000 microseconds (3ms)
   unsigned long m2 = micros();
