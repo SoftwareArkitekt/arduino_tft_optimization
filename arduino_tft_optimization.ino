@@ -12,7 +12,6 @@
 
 SPISettings settingsA(25000000, MSBFIRST, SPI_MODE1);
 volatile int segment_number = 1;
-static uint16_t segment[45][240]; // 4 segments make up one camera image, 240x180
 static uint16_t image[240][240]; // For benchmarking
 ST7789_t3 tft = ST7789_t3(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
