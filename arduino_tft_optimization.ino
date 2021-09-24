@@ -12,7 +12,8 @@
 
 SPISettings settingsA(25000000, MSBFIRST, SPI_MODE1);
 volatile int segment_number = 1;
-static uint16_t segment[45][240]; // 4 segments make up one image, 240x180
+static uint16_t segment[45][240]; // 4 segments make up one camera image, 240x180
+static uint16_t image[240][240]; // For benchmarking
 ST7789_t3 tft = ST7789_t3(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
 void setup() {
@@ -20,11 +21,28 @@ void setup() {
   Wire.begin();
   Serial.begin(115200);
   SPI.begin();
+  tft.useFrameBuffer(true);
   tft.init(240, 240);   // initialize a ST7789 chip, 240x240 pixels
   tft.fillScreen(ST77XX_BLACK);
 }
 
-void loop() {
+void fullscreen_test() {
+  for (int y=0; y<240; y++) {
+    for (int x=0; x<240; x++) {
+      image[y][x] = random(65535);
+    }
+  }
+  unsigned long m1 = micros();
+  tft.writeRect(0,0,240,240,*image);
+  unsigned long m2 = micros();
+  unsigned long delta = m2 - m1;
+  // Averages to 50ms.
+  Serial.print("Delta: ");
+  Serial.println(delta);
+}
+
+// Mimics the SPI camera I am using.
+void segment_test() {
   // Generate some noise
   for (int y=0; y<45; y++) {
     for (int x=0; x<240; x++) {
@@ -45,11 +63,15 @@ void loop() {
     segment_number = 1;
   }
   // Calculate how long it took to display this 240x45px segment
-  // 4 segments = 1 full 240x180 image. 
-  // delta averages to 9389 microseconds (9.39ms)
-  // This number needs to be closer to 3000 microseconds (3ms)
+  // 4 segments = 1 full 240x180 camera image. 
+  // delta averages to 9389 microseconds for an individual 1/4 image. (9.39ms)
   unsigned long m2 = micros();
   unsigned long delta = m2 - m1;
   Serial.print("Delta: ");
   Serial.println(delta);
+}
+
+void loop() {
+  fullscreen_test();
+  //segment_test();
 }
