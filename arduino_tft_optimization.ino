@@ -44,7 +44,10 @@ void loop() {
   } else {
     segment_number = 1;
   }
-  // Calculate how long it took to display this 240x45px section
+  // Calculate how long it took to display this 240x45px segment
+  // 4 segments = 1 full 240x160 image. 
+  // delta averages to 9389 microseconds (9.39ms)
+  // This number needs to be closer to 3000 microseconds (3ms)
   unsigned long m2 = micros();
   unsigned long delta = m2 - m1;
   Serial.print("Delta: ");
