@@ -21,8 +21,15 @@ void setup() {
   Wire.begin();
   Serial.begin(115200);
   SPI.begin();
-  tft.useFrameBuffer(true);
   tft.init(240, 240);   // initialize a ST7789 chip, 240x240 pixels
+  // Adding print functions to the ST7735_t3 library shows that changing this value does alter
+  // the ctar value, but there is change in image print speed. Not sure what this is for.
+  tft.setBitrate(25000000); 
+  // Uncommenting useFrameBuffer and setFrameBuffer brings delta measurement down from 50ms 
+  // to 2ms per image, but I don't see any visual difference in speed. I'm thinking the async 
+  // operation halts the timer clock, giving an incorrect output.
+  //tft.useFrameBuffer(true); 
+  //tft.setFrameBuffer(*image);
   tft.fillScreen(ST77XX_BLACK);
 }
 
@@ -34,44 +41,14 @@ void fullscreen_test() {
   }
   unsigned long m1 = micros();
   tft.writeRect(0,0,240,240,*image);
+  //tft.updateScreenAsync(); // Related to useFrameBuffer and setFrameBuffer
   unsigned long m2 = micros();
   unsigned long delta = m2 - m1;
   // Averages to 50ms.
-  Serial.print("Delta: ");
-  Serial.println(delta);
-}
-
-// Mimics the SPI camera I am using.
-void segment_test() {
-  // Generate some noise
-  for (int y=0; y<45; y++) {
-    for (int x=0; x<240; x++) {
-      segment[y][x] = random(65535);
-    }
-  }
-  unsigned long m1 = micros();
-  int16_t x = 0;
-  int16_t y = 30+45*(segment_number-1);
-  int16_t w = 240;
-  int16_t h = 45;
-  // Display the noise on the screen
-  tft.writeRect(x,y,w,h,*segment);
-  // Cycle through each quarter of the screen
-  if (segment_number < 4) {
-    segment_number++;
-  } else {
-    segment_number = 1;
-  }
-  // Calculate how long it took to display this 240x45px segment
-  // 4 segments = 1 full 240x180 camera image. 
-  // delta averages to 9389 microseconds for an individual 1/4 image. (9.39ms)
-  unsigned long m2 = micros();
-  unsigned long delta = m2 - m1;
-  Serial.print("Delta: ");
+  Serial.print("Draw time: ");
   Serial.println(delta);
 }
 
 void loop() {
   fullscreen_test();
-  //segment_test();
 }
